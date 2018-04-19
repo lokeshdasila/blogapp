@@ -1,0 +1,12 @@
+.imageThumb{
+    width: 30%;
+    height: 40%;
+}
+
+i.icon{
+    font-size: 2em;
+}
+
+.container.main{
+    margin-top: 5em;
+}

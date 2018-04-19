@@ -1,0 +1,22 @@
+<% include partials/header.ejs %>
+<div class="ui main text container segment">
+    <div class="ui huge header">
+        Some of our blogs...
+    </div>
+    <% pageBlogs.forEach(function(blog){ %>
+        <div>
+            <h2><%= blog.title %></h2>
+            <p>
+                <img class = "imageThumb" src="<%= blog.image %>">
+                <br>
+                <%= blog.created %>
+            </p>
+            <p>
+                <%= blog.content %>
+            </p>
+            <a href="/blogs/<%= blog._id%>">Read more...</a>
+        </div>
+    <% }) %>
+</div>
+
+<% include partials/footer.ejs %>
