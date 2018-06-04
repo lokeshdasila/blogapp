@@ -1,10 +1,12 @@
 
-var express     = require("express"),
-    app         = express(),
-    mongu       = require("mongoose"),
-    bodyParser  = require("body-parser"),
-    port        = process.env.PORT || 3000,
-    ip          = process.env.IP || "127.0.0.1";
+var express         = require("express"),
+    app             = express(),
+    mongu           = require("mongoose"),
+    bodyParser      = require("body-parser"),
+    methodOverride  = require("method-override"),
+    sanitizer       = require("express-sanitizer"), 
+    port            = process.env.PORT || 3000,
+    ip              = process.env.IP || "127.0.0.1";
 
 
 mongu.connect("mongodb://localhost/restfulBlogApp");
@@ -12,6 +14,8 @@ mongu.connect("mongodb://localhost/restfulBlogApp");
 app.set("view engine","ejs");
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended:true}));
+app.use(sanitizer());                               // after body parser 
+app.use(methodOverride("_method"));
 
 var blogSchema = new mongu.Schema({
     title   : String,
@@ -57,6 +61,7 @@ app.get("/blogs/new",(req,res)=>{
 //Create
 app.post("/blogs",(req,res)=>{
     // create new blog
+    req.body.blog.content=req.sanitize(req.body.blog.content);
     blogModel.create(req.body.blog,(err,newBlog)=>{
         if(err){
             res.render("/blogs/new");
@@ -68,6 +73,64 @@ app.post("/blogs",(req,res)=>{
     // redirects to blogs
     //res.redirect("/blogs");
 })
+
+// Show
+app.get("/blogs/:id",(req,res)=>{
+    blogModel.findById(req.params.id,(err,foundBlog)=>{
+        if(err){
+            res.redirect("/blogs");
+        }
+        else{
+            res.render("show",{blog : foundBlog});
+        }
+    })
+});
+
+// edit
+app.get("/blogs/:id/edit",(req,res)=>{
+    console.log("Edit route");
+    blogModel.findById(req.params.id,(err,foundBlog)=>{
+        if(err){
+            res.redirect("/blogs");
+        }
+        else{
+            res.render("edit",{ blog : foundBlog });
+        }
+    });    
+});
+
+// update
+app.put("/blogs/:id",(req,res)=>{
+    console.log("blog update");
+    req.body.blog.content=req.sanitize(req.body.blog.content);
+    blogModel.findByIdAndUpdate(req.params.id, req.body.blog, (err,updatedBlog)=>{
+
+        if(err){
+            console.log("blog update error");
+            res.redirect("/blogs");
+        }
+        else{
+            console.log("updated to "+updatedBlog);
+            res.redirect("/blogs/"+req.params.id);
+           //res.send("yo");
+        }
+
+    })
+});
+
+// Delete
+app.delete("/blogs/:id",(req,res)=>{
+    blogModel.findByIdAndRemove(req.params.id,(err)=>{
+        if(err){
+            console.log("Not able to delete");
+            res.redirect("/blogs");
+        }
+        else{
+            console.log("Deleted sucessfully");
+            res.redirect("/blogs");
+        }
+    })
+});
 
 app.listen(port,ip,()=>{
     console.log("Server started in port "+port+" and ip "+ip);

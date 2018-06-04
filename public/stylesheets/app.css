@@ -10,3 +10,11 @@ i.icon{
 .container.main{
     margin-top: 5em;
 }
+
+#formDeleteButton{
+    display: inline;
+}
+
+#editButton{
+    margin-top: 10px;
+}
